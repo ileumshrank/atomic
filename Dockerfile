@@ -75,12 +75,14 @@ RUN useradd --system --create-home --shell /bin/false atomic && \
 
 COPY --from=rust-builder /usr/local/bin/atomic-server /usr/local/bin/atomic-server
 
-USER atomic
 # VOLUME /data    # Removed: Railway does not support Dockerfile VOLUME. Use Railway Volumes instead.
 EXPOSE 8080
 
-ENTRYPOINT ["atomic-server", "--db-path", "/data/atomic.db"]
-CMD ["serve", "--bind", "0.0.0.0", "--port", "8080"]
+# Runs as root (the USER atomic directive was removed above) so it can fix
+# ownership/permissions on the mounted Railway volume, which may be owned by
+# root or have restrictive permissions after mount, before exec'ing the
+# server.
+ENTRYPOINT ["sh", "-c", "chmod 755 /data && chown -R atomic:atomic /data && exec atomic-server --db-path /data/atomic.db serve --bind 0.0.0.0 --port 8080"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
