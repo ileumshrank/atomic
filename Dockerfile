@@ -79,8 +79,8 @@ USER atomic
 # VOLUME /data    # Removed: Railway does not support Dockerfile VOLUME. Use Railway Volumes instead.
 EXPOSE 8080
 
-ENTRYPOINT ["atomic-server", "--db-path", "/data/atomic.db"]
-CMD ["serve", "--bind", "0.0.0.0", "--port", "8080"]
+ENTRYPOINT ["sh", "-c"]
+CMD ["chmod -R 777 /data 2>/dev/null; exec atomic-server --db-path /data/atomic.db serve --bind 0.0.0.0 --port 8080"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
