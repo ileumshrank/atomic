@@ -189,3 +189,12 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8081/health || exit 1
 
 CMD ["sh", "-c", "exec supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
+
+# =============================================================================
+# Stage 8: Final (default) — SQLite server stage
+# =============================================================================
+# This stage is intentionally last so it becomes Docker's default build target
+# when no explicit --target is provided. Railway builds/runs the last stage in
+# the file by default, and this service uses SQLite with a persistent /data
+# volume, not Postgres. Keep this as the final stage in the file.
+FROM server AS final
